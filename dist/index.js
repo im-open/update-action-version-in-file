@@ -705,7 +705,7 @@ var require_file_command = __commonJS({
       };
     Object.defineProperty(exports2, '__esModule', { value: true });
     exports2.prepareKeyValueMessage = exports2.issueFileCommand = void 0;
-    var fs = __importStar(require('fs'));
+    var fs2 = __importStar(require('fs'));
     var os = __importStar(require('os'));
     var uuid_1 = require_dist();
     var utils_1 = require_utils();
@@ -714,10 +714,10 @@ var require_file_command = __commonJS({
       if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
       }
-      if (!fs.existsSync(filePath)) {
+      if (!fs2.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
       }
-      fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+      fs2.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
         encoding: 'utf8'
       });
     }
@@ -2431,3 +2431,23 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 
 // src/main.js
 var core = require_core();
+var requiredArgOptions = {
+  required: true,
+  trimWhitespace: true
+};
+var fs = require('fs');
+var fileName = core.getInput('file-to-update', requiredArgOptions);
+var actionName = core.getInput('action-name', requiredArgOptions);
+var versionPrefixInput = core.getInput('version-prefix', requiredArgOptions);
+var versionPrefix = versionPrefixInput == 'none' ? '' : versionPrefixInput;
+var updatedVersion = core.getInput('updated-version', requiredArgOptions);
+var saveFile = core.getBooleanInput('save-file', requiredArgOptions);
+var rawFileContent = fs.readFileSync(fileName, 'utf8');
+var regexString = `${actionName}@${versionPrefix}([0-9]+)(.[0-9]+)*(.[0-9]+)*`;
+var actionVersionRegex = new RegExp(regexString, 'ig');
+var replacementValue = `${actionName}@${updatedVersion}`;
+var updatedFileContent = rawFileContent.replace(actionVersionRegex, replacementValue);
+if (saveFile) {
+  fs.writeFileSync(fileName, updatedFileContent);
+}
+core.setOutput('updated-content', updatedFileContent);
