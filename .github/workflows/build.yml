@@ -20,6 +20,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Increment the version
+        id: version
+        uses: im-open/git-version-lite@v2.1.0
+        with:
+          create-ref: false
+          default-release-type: major
 
       - name: Setup Node.js 16
         uses: actions/setup-node@v3
@@ -32,6 +42,24 @@ jobs:
       - name: Format
         run: npm run format
 
+      - name: Update readme with latest version
+        if: matrix.operating-system == 'ubuntu-latest'
+        uses: ./
+        with:
+          file-to-update: './README.md'
+          action-name:  'im-open/update-action-version-in-file'
+          updated-version: ${{ steps.version.outputs.NEXT_VERSION }}
+
       - name: Check for unstaged changes
-        if: runner.os != 'windows'
-        run: ./check-for-unstaged-changes.sh
+        if: matrix.operating-system == 'ubuntu-latest'
+        run: |
+          if [[ "$(git status --porcelain)" != "" ]]; then
+            echo "There are changes to commit"
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add .
+            git commit -m "Update readme with latest version and/or recompile the action."
+            git push origin HEAD:${{ github.head_ref }}
+          else
+            echo "There were no changes to commit"
+          fi
