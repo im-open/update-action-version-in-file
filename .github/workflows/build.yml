@@ -4,11 +4,17 @@ on:
   # access to the target repository from public forks.  This should remain as a pull_request
   # trigger because checkout, build, format and checking for changes do not need elevated
   # permissions to the repository.  The reduced permissions for public forks is adequate.
+  # Since this will commit readme/recompile changes back to the branch, special attention 
+  # should be paid to changes made to this workflow when reviewing the PR and granting 
+  # permission to first time contributors to run the workflow.
   pull_request:
   # Don't include any specific paths here so we always get a build that produces a status
   # check that our Branch Protection Rules can use.  Having a status check also allows us
   # to require that branches be up to date before they are merged.
 
+env:
+  UBUNTU_JOB: ubuntu-latest
+  
 jobs:
   build:
     runs-on: ${{ matrix.operating-system }}
@@ -24,34 +30,34 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Increment the version
+      - name: Setup Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Recompile and Format action
+        run: npm run build
+
+      # These last steps only need to be done once
+      # per commit.  Run them on the ubuntu job.
+      - name: Get the next version for the readme
+        if: matrix.operating-system == '${{ env.UBUNTU_JOB }}'
         id: version
         uses: im-open/git-version-lite@v2.1.0
         with:
           create-ref: false
           default-release-type: major
 
-      - name: Setup Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-
-      - name: Build
-        run: npm run build
-
-      - name: Format
-        run: npm run format
-
-      - name: Update readme with latest version
-        if: matrix.operating-system == 'ubuntu-latest'
+      - name: Update readme with next version
+        if: matrix.operating-system == '${{ env.UBUNTU_JOB }}'
         uses: ./
         with:
           file-to-update: './README.md'
-          action-name:  'im-open/update-action-version-in-file'
+          action-name:  ${{ github.repository }}
           updated-version: ${{ steps.version.outputs.NEXT_VERSION }}
 
-      - name: Check for unstaged changes
-        if: matrix.operating-system == 'ubuntu-latest'
+      - name: Commit unstaged readme/recompile changes
+        if: matrix.operating-system == '${{ env.UBUNTU_JOB }}'
         run: |
           if [[ "$(git status --porcelain)" != "" ]]; then
             echo "There are changes to commit"
