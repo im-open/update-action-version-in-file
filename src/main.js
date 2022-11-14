@@ -29,3 +29,6 @@ if (saveFile) {
 }
 
 core.setOutput('updated-content', updatedFileContent);
+
+
+console.log('I am on a new branch where I need to be recompiled.  This is a test!');
