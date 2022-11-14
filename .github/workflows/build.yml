@@ -34,7 +34,7 @@ jobs:
       
       - name: Check for code changes to the action
         id: action
-        uses: im-open/check-if-pr-has-code-changes@initial-action
+        uses: im-open/check-if-pr-has-code-changes@v1.0.0
         with:
           files-with-code: 'action.yml,package.json,package-lock.json'
           folders-with-code: 'src,dist'
