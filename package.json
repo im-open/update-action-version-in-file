@@ -1,5 +1,5 @@
 {
-  "name": "javascript-action-template",
+  "name": "update-action-version-in-file",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,11 +9,6 @@
     "format": "prettier --write **/*.js",
     "format-check": "prettier --check **/*.js"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run build"
-    }
-  },
   "keywords": [],
   "author": "wtw",
   "license": "ISC",
@@ -22,7 +17,6 @@
   },
   "devDependencies": {
     "esbuild": "^0.12.29",
-    "husky": "^4.3.8",
     "install": "^0.13.0",
     "prettier": "^2.7.1"
   }

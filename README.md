@@ -1,6 +1,8 @@
-# javascript-action-template
+# update-action-version-in-file
 
-This template can be used to quickly start a new custom js action repository.  Click the `Use this template` button at the top to get started.
+This action has been created and configured for [im-open's] needs.
+
+This action looks for usages of a specified GitHub action so it can update each instance with the latest version. It will return the updated content as an output and it can optionally save the changes to disk.
 
 ## Index
 
@@ -13,92 +15,133 @@ This template can be used to quickly start a new custom js action repository.  C
 - [Code of Conduct](#code-of-conduct)
 - [License](#license)
 
-## TODOs
-
-- README.md
-  - [ ] Update the Inputs section with the correct action inputs
-  - [ ] Update the Outputs section with the correct action outputs
-  - [ ] Update the Usage Example section with the correct usage
-- package.json
-  - [ ] Update the `name` with the new action value
-- src/main.js
-  - [ ] Implement your custom javascript action
-- action.yml
-  - [ ] Fill in the correct name, description, inputs and outputs
-- .prettierrc.json
-  - [ ] Update any preferences you might have
-- CODEOWNERS
-  - [ ] Update as appropriate
-- Repository Settings
-  - [ ] On the *Options* tab check the box to *Automatically delete head branches*
-  - [ ] On the *Options* tab update the repository's visibility (must be done by an org owner)
-  - [ ] On the *Branches* tab add a branch protection rule
-    - [ ] Check *Require pull request reviews before merging*
-    - [ ] Check *Dismiss stale pull request approvals when new commits are pushed*
-    - [ ] Check *Require review from Code Owners*
-    - [ ] Check *Include Administrators*
-  - [ ] On the *Manage Access* tab add the appropriate groups
-- About Section (accessed on the main page of the repo, click the gear icon to edit)
-  - [ ] The repo should have a short description of what it is for
-  - [ ] Add one of the following topic tags:
-    | Topic Tag       | Usage                                    |
-    | --------------- | ---------------------------------------- |
-    | az              | For actions related to Azure             |
-    | code            | For actions related to building code     |
-    | certs           | For actions related to certificates      |
-    | db              | For actions related to databases         |
-    | git             | For actions related to Git               |
-    | iis             | For actions related to IIS               |
-    | microsoft-teams | For actions related to Microsoft Teams   |
-    | svc             | For actions related to Windows Services  |
-    | jira            | For actions related to Jira              |
-    | meta            | For actions related to running workflows |
-    | pagerduty       | For actions related to PagerDuty         |
-    | test            | For actions related to testing           |
-    | tf              | For actions related to Terraform         |
-  - [ ] Add any additional topics for an action if they apply
-  - [ ] The Packages and Environments boxes can be unchecked
-- Search for any remaining TODOs and address them.
-
 ## Inputs
 
-| Parameter | Is Required | Default | Description           |
-| --------- | ----------- | ------- | --------------------- |
-| `input`   | true        |         | Description goes here |
+| Parameter         | Is Required | Default | Description                                                                                                                                                                                                                  |
+| ----------------- | ----------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `file-to-update`  | true        |         | The name of the file that should be updated with the new action version.                                                                                                                                                     |
+| `action-name`     | true        |         | The name of the action that will be updated in the specified file. Format should be `org/repo` and any nested directories if applicable.</br>&nbsp;&nbsp;• `im-open/is-actor-authorized`</br>&nbsp;&nbsp;• `actions/aws/ec2` |
+| `version-prefix`  | false       | `v`     | The prefix the action uses in its versions, if applicable.                                                                                                                                                                         |
+| `updated-version` | true        |         | The new action version to replace other instances with in the specified file.                                                                                                                                                |
+| `save-file`       | false       | true    | Flag indicating whether the changes to the specified file should be saved. <br/>Accepts: `true or false`.                                                                                                                    |
 
 ## Outputs
 
-| Output   | Description           | Possible Values |
-| -------- | --------------------- | --------------- |
-| `output` | Description goes here |                 |
+| Output            | Description                                                                     |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `updated-content` | A copy of the original file content that has been updated with the new version. |
 
 ## Usage Examples
 
+### Original README.md for the `is-actor-authorized` action before modification
+
+```md
+# is-actor-authorized
+
+This action checks if users are authorized!
+
+How to use:
+
+- uses: im-open/is-actor-authorized@v1
+  with:
+  actor: ${{ github.actor }}
+  authorized-actors: ['bob-the-builder', 'potato', 'QA-boy']
+
+- uses: im-open/is-actor-authorized@v1.10.999
+  with:
+  actor: ${{ github.actor }}
+  authorized-actors: ['CookieMonster83', 'BabyYoda', 'FrecklesBiggestFan']
+
+# This step does not include the prefix 'v', so it does not match and will not be updated
+
+- uses: im-open/is-actor-authorized@1.1.1  
+  with:
+  actor: ${{ github.actor }}
+  authorized-actors: ['izep', 'rowon']
+```
+
+### Using this action in a build workflow to update `is-actor-authorized`'s README.md
+
 ```yml
 jobs:
-  jobname:
+  build:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
 
-      - name: ''
-        uses: im-open/thisrepo@v1.0.0 # TODO:  fix the action name
+      # Do something real (like git-version-lite) to figure
+      # out the next version...for the sake of the example:
+      - run: |
+          echo "CURRENT_VERSION=v1.10.999" >> $GITHUB_ENV
+          echo "NEXT_VERSION=v2.0.0" >> $GITHUB_ENV
+
+      - name: Build
+        run: npm run build
+
+      - name: Update readme with latest version
+        uses: im-open/update-action-version-in-file@v1.0.0
         with:
-          input: ''
+          file-to-update: './README.md'
+          action-name: 'im-open/is-actor-authorized' # Can also include a nested directory if needed like: actions/aws/ec2
+          updated-version: ${{ env.NEXT_VERSION }}
+
+      - name: Commit and push any changes to current branch
+        run: |
+          if [[ "$(git status --porcelain)" != "" ]]; then
+            echo "There are changes to commit"
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add .
+            git commit -m "Update readme with next version."
+            git push
+          else
+            echo "There were no changes to commit"
+          fi
+```
+
+### Updated README.md content after running `update-action-version-in-file`
+
+```md
+# is-actor-authorized
+
+This action checks if users are authorized!
+
+How to use:
+
+- uses: im-open/is-actor-authorized@v2.0.0
+  with:
+  actor: ${{ github.actor }}
+  authorized-actors: ['bob-the-builder', 'potato', 'QA-boy']
+
+- uses: im-open/is-actor-authorized@v2.0.0
+  with:
+  actor: ${{ github.actor }}
+  authorized-actors: ['CookieMonster83', 'BabyYoda', 'FrecklesBiggestFan']
+
+# This step does not include the prefix 'v', so it does not match and will not be updated
+
+- uses: im-open/is-actor-authorized@1.1.1  
+  with:
+  actor: ${{ github.actor }}
+  authorized-actors: ['izep', 'rowon']
 ```
 
 ## Contributing
 
 When creating new PRs please ensure:
 
-1. The action has been recompiled.  See the [Recompiling](#recompiling) section below for more details.
-2. For major or minor changes, at least one of the commit messages contains the appropriate `+semver:` keywords listed under [Incrementing the Version](#incrementing-the-version).
-3. The `README.md` example has been updated with the new version.  See [Incrementing the Version](#incrementing-the-version).
-4. The action code does not contain sensitive information.
+1. For major or minor changes, at least one of the commit messages contains the appropriate `+semver:` keywords listed under [Incrementing the Version](#incrementing-the-version).
+1. The action code does not contain sensitive information.
 
-### Recompiling
+When a pull request is created, a workflow will run that will recompile the action and push a commit to the branch if the PR author has not done so. The usage examples in the README.md will also be updated with the next version if they have not been updated manually.
 
-If changes are made to the action's code in this repository, or its dependencies, you will need to re-compile the action.
+1. The action has been recompiled. See the [Recompiling](#recompiling-manually) section below for more details.
+1. The `README.md` example has been updated with the new version. See [Incrementing the Version](#incrementing-the-version).
+1. This should happen automatically with most pull requests as part of the build workflow.  There may be some instances where the bot does not have permission to push back to the branch though so these steps should be done manually on those branches.
+
+### Recompiling Manually
+
+If changes are made to the action's code in this repository, or its dependencies, the action can be re-compiled by running the following command:
 
 ```sh
 # Installs dependencies and bundles the code
@@ -113,14 +156,14 @@ its dependencies into a single file located in the `dist` folder.
 
 ### Incrementing the Version
 
-This action uses [git-version-lite] to examine commit messages to determine whether to perform a major, minor or patch increment on merge.  The following table provides the fragment that should be included in a commit message to active different increment strategies.
-| Increment Type | Commit Message Fragment                     |
+This action uses [git-version-lite] to examine commit messages to determine whether to perform a major, minor or patch increment on merge. The following table provides the fragment that should be included in a commit message to active different increment strategies.
+| Increment Type | Commit Message Fragment |
 | -------------- | ------------------------------------------- |
-| major          | +semver:breaking                            |
-| major          | +semver:major                               |
-| minor          | +semver:feature                             |
-| minor          | +semver:minor                               |
-| patch          | *default increment type, no comment needed* |
+| major | +semver:breaking |
+| major | +semver:major |
+| minor | +semver:feature |
+| minor | +semver:minor |
+| patch | _default increment type, no comment needed_ |
 
 ## Code of Conduct
 
@@ -131,3 +174,4 @@ This project has adopted the [im-open's Code of Conduct](https://github.com/im-o
 Copyright &copy; 2022, Extend Health, LLC. Code released under the [MIT license](LICENSE).
 
 [git-version-lite]: https://github.com/im-open/git-version-lite
+[im-open's]: https://github.com/im-open
