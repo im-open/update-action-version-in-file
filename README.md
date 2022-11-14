@@ -137,6 +137,7 @@ When a pull request is created, a workflow will run that will recompile the acti
 
 1. The action has been recompiled. See the [Recompiling](#recompiling-manually) section below for more details.
 1. The `README.md` example has been updated with the new version. See [Incrementing the Version](#incrementing-the-version).
+1. This should happen automatically with most pull requests as part of the build workflow.  There may be some instances where the bot does not have permission to push back to the branch though so these steps should be done manually on those branches.
 
 ### Recompiling Manually
 

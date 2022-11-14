@@ -12,9 +12,6 @@ on:
   # check that our Branch Protection Rules can use.  Having a status check also allows us
   # to require that branches be up to date before they are merged.
 
-env:
-  UBUNTU_JOB: ubuntu-latest
-  
 jobs:
   build:
     runs-on: ${{ matrix.operating-system }}
@@ -24,6 +21,7 @@ jobs:
         operating-system: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
+      - run: echo "matrix.os - ${{ matrix.operating-system }}"
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -41,7 +39,7 @@ jobs:
       # These last steps only need to be done once
       # per commit.  Run them on the ubuntu job.
       - name: Get the next version for the readme
-        if: matrix.operating-system == '${{ env.UBUNTU_JOB }}'
+        if: matrix.operating-system == 'ubuntu-latest'
         id: version
         uses: im-open/git-version-lite@v2.1.0
         with:
@@ -49,7 +47,7 @@ jobs:
           default-release-type: major
 
       - name: Update readme with next version
-        if: matrix.operating-system == '${{ env.UBUNTU_JOB }}'
+        if: matrix.operating-system == 'ubuntu-latest'
         uses: ./
         with:
           file-to-update: './README.md'
@@ -57,7 +55,8 @@ jobs:
           updated-version: ${{ steps.version.outputs.NEXT_VERSION }}
 
       - name: Commit unstaged readme/recompile changes
-        if: matrix.operating-system == '${{ env.UBUNTU_JOB }}'
+        if: matrix.operating-system == 'ubuntu-latest'
+        shell: bash
         run: |
           if [[ "$(git status --porcelain)" != "" ]]; then
             echo "There are changes to commit"
