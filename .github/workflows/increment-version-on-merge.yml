@@ -33,6 +33,15 @@ jobs:
       # position  of influence over the build/testing process, it is safe to checkout the code
       # on a pull_request_target.  But we need to be extra careful not to trigger any script
       # that may operate on PR controlled contents like in the case of npm install.
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      # See https://github.com/im-open/git-version-lite for more details around how to increment
+      # major/minor/patch through commit messages
       - name: Increment the version
         uses: im-open/git-version-lite@v2
         id: version
