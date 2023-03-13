@@ -79,7 +79,8 @@ jobs:
         run: npm run build
 
       - name: Update readme with latest version
-        uses: im-open/update-action-version-in-file@v1.0.0
+        # You may also reference just the major or major.minor version.
+        uses: im-open/update-action-version-in-file@v1.0.1
         with:
           file-to-update: './README.md'
           action-name: 'im-open/is-actor-authorized' # Can also include a nested directory if needed like: actions/aws/ec2
