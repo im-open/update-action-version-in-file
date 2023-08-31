@@ -10,7 +10,7 @@ This action looks for usages of a specified GitHub action so it can update each 
 - [Outputs](#outputs)
 - [Usage Examples](#usage-examples)
 - [Contributing](#contributing)
-  - [Recompiling](#recompiling)
+  - [Recompiling](#recompiling-manually)
   - [Incrementing the Version](#incrementing-the-version)
 - [Code of Conduct](#code-of-conduct)
 - [License](#license)
@@ -18,18 +18,19 @@ This action looks for usages of a specified GitHub action so it can update each 
 ## Inputs
 
 | Parameter         | Is Required | Default | Description                                                                                                                                                                                                                  |
-| ----------------- | ----------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-------------------|-------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `file-to-update`  | true        |         | The name of the file that should be updated with the new action version.                                                                                                                                                     |
 | `action-name`     | true        |         | The name of the action that will be updated in the specified file. Format should be `org/repo` and any nested directories if applicable.</br>&nbsp;&nbsp;• `im-open/is-actor-authorized`</br>&nbsp;&nbsp;• `actions/aws/ec2` |
-| `version-prefix`  | false       | `v`     | The prefix the action uses in its versions, if applicable.                                                                                                                                                                         |
+| `version-prefix`  | false       | `v`     | The prefix the action uses in its versions, if applicable.                                                                                                                                                                   |
 | `updated-version` | true        |         | The new action version to replace other instances with in the specified file.                                                                                                                                                |
 | `save-file`       | false       | true    | Flag indicating whether the changes to the specified file should be saved. <br/>Accepts: `true or false`.                                                                                                                    |
 
 ## Outputs
 
-| Output            | Description                                                                     |
-| ----------------- | ------------------------------------------------------------------------------- |
-| `updated-content` | A copy of the original file content that has been updated with the new version. |
+| Output            | Description                                                                         |
+|-------------------|-------------------------------------------------------------------------------------|
+| `updated-content` | A copy of the original file content that has been updated with the new version.     |
+| `has-changes`     | Flag indicating whether or not version changes were detected in the specified file. |
 
 ## Usage Examples
 
@@ -53,7 +54,6 @@ How to use:
   authorized-actors: ['CookieMonster83', 'BabyYoda', 'FrecklesBiggestFan']
 
 # This step does not include the prefix 'v', so it does not match and will not be updated
-
 - uses: im-open/is-actor-authorized@1.1.1  
   with:
   actor: ${{ github.actor }}
@@ -75,29 +75,26 @@ jobs:
           echo "CURRENT_VERSION=v1.10.999" >> $GITHUB_ENV
           echo "NEXT_VERSION=v2.0.0" >> $GITHUB_ENV
 
-      - name: Build
-        run: npm run build
+      - run: npm run build
 
       - name: Update readme with latest version
         # You may also reference just the major or major.minor version.
         uses: im-open/update-action-version-in-file@v1.0.1
+        id: version-readme
         with:
           file-to-update: './README.md'
           action-name: 'im-open/is-actor-authorized' # Can also include a nested directory if needed like: actions/aws/ec2
           updated-version: ${{ env.NEXT_VERSION }}
 
       - name: Commit and push any changes to current branch
+        if: steps.version-readme.outputs.has-changes
         run: |
-          if [[ "$(git status --porcelain)" != "" ]]; then
-            echo "There are changes to commit"
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add .
-            git commit -m "Update readme with next version."
-            git push
-          else
-            echo "There were no changes to commit"
-          fi
+          echo "There are changes to commit"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update readme with next version."
+          git push
 ```
 
 ### Updated README.md content after running `update-action-version-in-file`
@@ -119,8 +116,7 @@ How to use:
   actor: ${{ github.actor }}
   authorized-actors: ['CookieMonster83', 'BabyYoda', 'FrecklesBiggestFan']
 
-# This step does not include the prefix 'v', so it does not match and will not be updated
-
+# This step does not include the prefix 'v', so it did not match and was not updated
 - uses: im-open/is-actor-authorized@1.1.1  
   with:
   actor: ${{ github.actor }}
@@ -164,13 +160,13 @@ its dependencies into a single file located in the `dist` folder.
 Both the build and PR merge workflows will use the strategies below to determine what the next version will be.  If the build workflow was not able to automatically update the README.md action examples with the next version, the README.md should be updated manually as part of the PR using that calculated version.
 
 This action uses [git-version-lite] to examine commit messages to determine whether to perform a major, minor or patch increment on merge. The following table provides the fragment that should be included in a commit message to active different increment strategies.
-| Increment Type | Commit Message Fragment |
-| -------------- | ------------------------------------------- |
-| major | +semver:breaking |
-| major | +semver:major |
-| minor | +semver:feature |
-| minor | +semver:minor |
-| patch | _default increment type, no comment needed_ |
+| Increment Type | Commit Message Fragment                     |
+|----------------|---------------------------------------------|
+| major          | +semver:breaking                            |
+| major          | +semver:major                               |
+| minor          | +semver:feature                             |
+| minor          | +semver:minor                               |
+| patch          | _default increment type, no comment needed_ |
 
 ## Code of Conduct
 
