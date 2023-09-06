@@ -1,6 +1,6 @@
 name: update-action-version-in-file
 
-description: Updates each instance of the semantic version for an action in the specified file and optionally saves the changes to disk.
+description: Updates each instance of the semantic version for an action in the specified file and optionally saves the changes to disk.  Make a change to source code.
 
 inputs:
   file-to-update:
