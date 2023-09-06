@@ -79,7 +79,7 @@ jobs:
 
       - name: Update readme with latest version
         # You may also reference just the major or major.minor version.
-        uses: im-open/update-action-version-in-file@v1.1.0
+        uses: im-open/update-action-version-in-file@v1.1.1
         id: version-readme
         with:
           file-to-update: './README.md'
