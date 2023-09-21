@@ -15,9 +15,6 @@ inputs:
   updated-version:
     description: 'The new action version to replace other instances with in the specified file.'
     required: true
-  save-file:
-    description: 'Flag indicating whether the changes to the specified file should be saved.  Accepts: `true|false`.'
-    default: 'true'
 
 outputs:
   updated-content:

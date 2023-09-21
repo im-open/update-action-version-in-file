@@ -23,7 +23,6 @@ This action looks for usages of a specified GitHub action so it can update each 
 | `action-name`     | true        |         | The name of the action that will be updated in the specified file. Format should be `org/repo` and any nested directories if applicable.</br>&nbsp;&nbsp;• `im-open/is-actor-authorized`</br>&nbsp;&nbsp;• `actions/aws/ec2` |
 | `version-prefix`  | false       | `v`     | The prefix the action uses in its versions, if applicable.                                                                                                                                                                   |
 | `updated-version` | true        |         | The new action version to replace other instances with in the specified file.                                                                                                                                                |
-| `save-file`       | false       | true    | Flag indicating whether the changes to the specified file should be saved. <br/>Accepts: `true or false`.                                                                                                                    |
 
 ## Outputs and Environment Variables
 
@@ -81,7 +80,7 @@ jobs:
 
       - name: Update readme with latest version
         # You may also reference just the major or major.minor version.
-        uses: im-open/update-action-version-in-file@v1.1.1
+        uses: im-open/update-action-version-in-file@v2.0.0
         id: version-readme
         with:
           file-to-update: './README.md'

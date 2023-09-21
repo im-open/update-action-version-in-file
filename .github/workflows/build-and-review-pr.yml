@@ -22,6 +22,10 @@ on:
   #   we can also use that to require all branches be up to date before they are merged.
 
 jobs:
+  # Normally the setup job and the build-and-review-pr job would be performed
+  # in a resuable workflow.  However, this action is used in that reusable workflow
+  # so it contains its own copy of the build functionality.
+  # reusable workflow: im-open/.github/.github/workflows/reusable-build-and-review-pr.yml
   setup:
     runs-on: ubuntu-latest
     outputs:
@@ -201,3 +205,80 @@ jobs:
               .addRaw(instructionsWithLinks)
               .write();
             core.setFailed(instructions);
+
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      PRODUCTION_READY_TAG: 'v1.1.3'
+      PRE_RELEASE_TAG: 'v1.0.2'
+      DRAFT_RELEASE_TAG: 'v1.0.1'
+      NONEXISTENT_RELEASE_TAG: 'v304.973.444'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      #--------------------------------------
+      # FILE HAS CHANGES
+      #--------------------------------------
+      - name: '-------------------------------------------------------------------------------------------------------'
+        run: echo ""
+      - name: When updating a file with a new action version
+        uses: ./
+        if: always()
+        id: changes
+        with:
+          file-to-update: ./test/file-to-update.md
+          action-name: im-open/update-action-version-in-file
+          version-prefix: p
+          updated-version: v1.0.0
+          
+      - name: Then the outcome should be success
+        if: always()
+        run: ./test/assert-values-match.sh --name "step outcome" --expected "success" --actual "${{ steps.changes.outcome }}"
+
+      - name: And the has-changes output should be true
+        if: always()
+        run: ./test/assert-values-match.sh --name "has-changes" --expected "true" --actual "${{ steps.changes.outputs.has-changes }}"
+      
+      - name: And the updated-content output should have updated action versions
+        if: always()
+        run: |
+          expectedContent=$(cat ./test/expected-output.md)
+          ./test/assert-values-match.sh --name "updated-content" --expected "$expectedContent" --actual "${{ steps.changes.outputs.updated-content }}"
+      
+
+      #--------------------------------------
+      # FILE HAS NO CHANGES
+      #--------------------------------------
+      - name: '-------------------------------------------------------------------------------------------------------'
+        run: echo ""
+      - name: When updating a file with a new action version
+        uses: ./
+        if: always()
+        id: no-changes
+        with:
+          file-to-update: ./test/file-to-update.md
+          action-name: im-open/different-action-version
+          version-prefix: v
+          updated-version: v1.0.0
+          
+      - name: Then the outcome should be success
+        if: always()
+        run: ./test/assert-values-match.sh --name "step outcome" --expected "success" --actual "${{ steps.no-changes.outcome }}"
+
+      - name: And the has-changes output should be false
+        if: always()
+        run: ./test/assert-values-match.sh --name "has-changes" --expected "false" --actual "${{ steps.no-changes.outputs.has-changes }}"
+      
+      - name: And the updated-content output should be the original content
+        if: always()
+        run: |
+          expectedContent=$(cat ./test/file-to-update.md)
+          ./test/assert-values-match.sh --name "updated-content" --expected "$expectedContent" --actual "${{ steps.no-changes.outputs.updated-content }}"
+
+      - name: '-------------------------------------------------------------------------------------------------------'
+        run: echo ""
+     
+      
+      

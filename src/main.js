@@ -15,7 +15,6 @@ const versionPrefixInput = core.getInput('version-prefix', requiredArgOptions);
 const versionPrefix = versionPrefixInput == 'none' ? '' : versionPrefixInput;
 
 const updatedVersion = core.getInput('updated-version', requiredArgOptions);
-const saveFile = core.getBooleanInput('save-file', requiredArgOptions);
 
 const originalFileContent = fs.readFileSync(fileName, 'utf8');
 const regexString = `${actionName}@${versionPrefix}([0-9]+)(\.[0-9]+)*(\.[0-9]+)*`;
@@ -28,9 +27,6 @@ const hasChanges = updatedFileContent != originalFileContent;
 
 if (hasChanges) {
   core.info(`Version changes were detected in ${fileName}.`);
-  if (saveFile) {
-    fs.writeFileSync(fileName, updatedFileContent);
-  }
 } else {
   core.info(`No version changes were detected in ${fileName}.`);
 }

@@ -2441,7 +2441,6 @@ var actionName = core.getInput('action-name', requiredArgOptions);
 var versionPrefixInput = core.getInput('version-prefix', requiredArgOptions);
 var versionPrefix = versionPrefixInput == 'none' ? '' : versionPrefixInput;
 var updatedVersion = core.getInput('updated-version', requiredArgOptions);
-var saveFile = core.getBooleanInput('save-file', requiredArgOptions);
 var originalFileContent = fs.readFileSync(fileName, 'utf8');
 var regexString = `${actionName}@${versionPrefix}([0-9]+)(.[0-9]+)*(.[0-9]+)*`;
 var actionVersionRegex = new RegExp(regexString, 'ig');
@@ -2450,9 +2449,6 @@ var updatedFileContent = originalFileContent.replace(actionVersionRegex, replace
 var hasChanges = updatedFileContent != originalFileContent;
 if (hasChanges) {
   core.info(`Version changes were detected in ${fileName}.`);
-  if (saveFile) {
-    fs.writeFileSync(fileName, updatedFileContent);
-  }
 } else {
   core.info(`No version changes were detected in ${fileName}.`);
 }
