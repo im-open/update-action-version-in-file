@@ -36,7 +36,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: main
           fetch-depth: 0
 
       - name: Check for code changes to the action source code
@@ -58,7 +57,7 @@ jobs:
       - name: Get the next version for the repo
         if: steps.source-code.outputs.HAS_CHANGES == 'true'
         id: version
-        uses: im-open/git-version-lite@v2
+        uses: im-open/git-version-lite@transfer
 
       - name: The next action version will be - ${{ steps.version.outputs.NEXT_VERSION || 'N/A'}}
         if: steps.source-code.outputs.HAS_CHANGES == 'true'
