@@ -2458,3 +2458,5 @@ if (hasChanges) {
 }
 core.setOutput('has-changes', hasChanges);
 core.setOutput('updated-content', updatedFileContent);
+core.exportVariable('FILE_HAS_CHANGED', hasChanges);
+core.exportVariable('UPDATED_CONTENT', updatedFileContent);
