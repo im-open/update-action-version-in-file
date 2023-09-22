@@ -25,12 +25,14 @@ This action looks for usages of a specified GitHub action so it can update each 
 | `updated-version` | true        |         | The new action version to replace other instances with in the specified file.                                                                                                                                                |
 | `save-file`       | false       | true    | Flag indicating whether the changes to the specified file should be saved. <br/>Accepts: `true or false`.                                                                                                                    |
 
-## Outputs
+## Outputs and Environment Variables
 
-| Output            | Description                                                                         |
-|-------------------|-------------------------------------------------------------------------------------|
-| `updated-content` | A copy of the original file content that has been updated with the new version.     |
-| `has-changes`     | Flag indicating whether or not version changes were detected in the specified file. |
+| Output                    | Description                                                                         |
+|---------------------------|-------------------------------------------------------------------------------------|
+| `outputs.updated-content` | A copy of the original file content that has been updated with the new version.     |
+| `outputs.has-changes`     | Flag indicating whether or not version changes were detected in the specified file. |
+| `env.UPDATED_CONTENT`     | A copy of the original file content that has been updated with the new version.     |
+| `env.FILE_HAS_CHANGED`    | Flag indicating whether or not version changes were detected in the specified file. |
 
 ## Usage Examples
 
@@ -79,7 +81,7 @@ jobs:
 
       - name: Update readme with latest version
         # You may also reference just the major or major.minor version.
-        uses: im-open/update-action-version-in-file@v1.1.0
+        uses: im-open/update-action-version-in-file@v1.1.1
         id: version-readme
         with:
           file-to-update: './README.md'
