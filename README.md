@@ -1,3 +1,7 @@
+# DEPRECATED 2023-10-11
+
+This standalone action has been deprecated.  Actions in im-open have been updated to use the reusable workflow located in [.github] for their builds and that repository contains it's own copy of this action that is used during the build process.
+
 # update-action-version-in-file
 
 This action has been created and configured for [im-open's] needs.
@@ -186,3 +190,4 @@ Copyright &copy; 2023, Extend Health, LLC. Code released under the [MIT license]
 [esbuild]: https://esbuild.github.io/getting-started/#bundling-for-node
 [git-version-lite]: https://github.com/im-open/git-version-lite
 [im-open's]: https://github.com/im-open
+[.github]: https://github.com/im-open/.github
